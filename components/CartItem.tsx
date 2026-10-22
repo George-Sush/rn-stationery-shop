@@ -1,34 +1,39 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { CartLine } from '../types/product';
+import { CartLine } from '../types/medicine';
 import { useCartStore } from '../stores/cartStore';
-import { useState } from 'react';
+import { medicineImages } from '../assets/medicineImages';
 
 export default function CartItem({ line }: { line: CartLine }) {
-  const [qty, setQty] = useState<number>(line.quantity);
   const remove = useCartStore((s) => s.remove);
+  const increment = useCartStore((s) => s.increment);
+  const decrement = useCartStore((s) => s.decrement);
 
-  const sum = line.product.price * qty;
+  const sum = line.medicine.price * line.quantity;
 
   return (
     <View style={styles.row}>
-      <Image source={{ uri: line.product.image_url }} style={styles.image} />
+      <Image source={medicineImages[line.medicine.imageFile]} style={styles.image} />
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={2}>
-          {line.product.name}
+          {line.medicine.name}
         </Text>
         <Text style={styles.price}>
-          {line.product.price} ₽ × {qty} = {sum} ₽
+          {line.medicine.price} ₽ × {line.quantity} = {sum} ₽
         </Text>
 
         <View style={styles.controls}>
-          <Pressable style={styles.qtyBtn} onPress={() => setQty(qty - 1)}>
+          <Pressable style={styles.qtyBtn} onPress={() => decrement(line.medicine.id)}>
             <Text style={styles.qtyText}>−</Text>
           </Pressable>
-          <Text style={styles.qty}>{qty}</Text>
-          <Pressable style={styles.qtyBtn} onPress={() => setQty(qty + 1)}>
+          <Text style={styles.qty}>{line.quantity}</Text>
+          <Pressable
+            style={[styles.qtyBtn, line.quantity >= line.medicine.stock && styles.disabledBtn]}
+            disabled={line.quantity >= line.medicine.stock}
+            onPress={() => increment(line.medicine.id)}
+          >
             <Text style={styles.qtyText}>+</Text>
           </Pressable>
-          <Pressable onPress={() => remove(line.product.id)} style={styles.remove}>
+          <Pressable onPress={() => remove(line.medicine.id)} style={styles.remove}>
             <Text style={styles.removeText}>Удалить</Text>
           </Pressable>
         </View>
@@ -44,23 +49,24 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginVertical: 6,
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 18,
   },
-  image: { width: 72, height: 72, borderRadius: 8, backgroundColor: '#f2f2f2' },
+  image: { width: 72, height: 82, borderRadius: 12, backgroundColor: '#edf2ec' },
   info: { flex: 1, marginLeft: 12 },
   name: { fontSize: 14, fontWeight: '600', marginBottom: 4 },
-  price: { fontSize: 13, color: '#1e88e5', fontWeight: '600', marginBottom: 8 },
+  price: { fontSize: 13, color: '#236b48', fontWeight: '600', marginBottom: 8 },
   controls: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   qtyBtn: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#eef3fa',
+    backgroundColor: '#edf3ee',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  qtyText: { fontSize: 18, fontWeight: '700', color: '#1e88e5' },
+  disabledBtn: { opacity: 0.4 },
+  qtyText: { fontSize: 18, fontWeight: '700', color: '#236b48' },
   qty: { fontSize: 16, fontWeight: '700', minWidth: 24, textAlign: 'center' },
   remove: { marginLeft: 'auto' },
-  removeText: { color: '#e53935', fontSize: 13 },
+  removeText: { color: '#a45345', fontSize: 13 },
 });

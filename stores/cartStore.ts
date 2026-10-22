@@ -1,64 +1,72 @@
 import { create } from 'zustand';
-import { CartLine, Product } from '../types/product';
+import { CartLine, Medicine } from '../types/medicine';
 import { useShallow } from 'zustand/react/shallow';
 
 interface CartState {
   lines: Record<string, CartLine>;
 
-  add: (product: Product, quantity?: number) => void;
-  remove: (productId: string) => void;
-  increment: (productId: string) => void;
-  decrement: (productId: string) => void;
+  add: (medicine: Medicine, quantity?: number) => void;
+  remove: (medicineId: string) => void;
+  increment: (medicineId: string) => void;
+  decrement: (medicineId: string) => void;
   clear: () => void;
 }
 
 export const useCartStore = create<CartState>((set) => ({
   lines: {},
 
-  add: (product, quantity = 1) =>
+  add: (medicine, quantity = 1) =>
     set((state) => {
-      const existing = state.lines[product.id];
+      if (medicine.requiresPrescription || medicine.stock <= 0 || quantity <= 0) {
+        return state;
+      }
+
+      const existing = state.lines[medicine.id];
+      const nextQuantity = Math.min(
+        (existing?.quantity ?? 0) + quantity,
+        medicine.stock,
+      );
       return {
         lines: {
           ...state.lines,
-          [product.id]: existing
-            ? { ...existing, quantity: existing.quantity + quantity }
-            : { product, quantity },
+          [medicine.id]: existing
+            ? { ...existing, quantity: nextQuantity }
+            : { medicine, quantity: nextQuantity },
         },
       };
     }),
 
-  remove: (productId) =>
+  remove: (medicineId) =>
     set((state) => {
-      const { [productId]: _removed, ...rest } = state.lines;
+      const { [medicineId]: _removed, ...rest } = state.lines;
       return { lines: rest };
     }),
 
-  increment: (productId) =>
+  increment: (medicineId) =>
     set((state) => {
-      const line = state.lines[productId];
+      const line = state.lines[medicineId];
       if (!line) return state;
+      if (line.quantity >= line.medicine.stock) return state;
       return {
         lines: {
           ...state.lines,
-          [productId]: { ...line, quantity: line.quantity + 1 },
+          [medicineId]: { ...line, quantity: line.quantity + 1 },
         },
       };
     }),
 
-  decrement: (productId) =>
+  decrement: (medicineId) =>
     set((state) => {
-      const line = state.lines[productId];
+      const line = state.lines[medicineId];
       if (!line) return state;
-      // Если количество станет 0 — просто удаляем позицию
       if (line.quantity <= 1) {
-        const { [productId]: _removed, ...rest } = state.lines;
+        const { [medicineId]: _removed, ...rest } = state.lines;
         return { lines: rest };
       }
       return {
         lines: {
           ...state.lines,
-          [productId]: { ...line, quantity: line.quantity - 1 },
+          [medicineId]: { ...line, quantity: line.quantity - 1 },
         },
       };
     }),
@@ -72,7 +80,7 @@ export const selectCartCount = (s: CartState): number =>
 
 export const selectCartTotal = (s: CartState): number =>
   Object.values(s.lines).reduce(
-    (sum, line) => sum + line.product.price * line.quantity,
+    (sum, line) => sum + line.medicine.price * line.quantity,
     0,
   );
 

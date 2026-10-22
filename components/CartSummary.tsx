@@ -8,7 +8,7 @@ export default function CartSummary() {
   return (
     <View style={styles.wrap}>
       <View style={styles.row}>
-        <Text style={styles.label}>Товаров</Text>
+        <Text style={styles.label}>Лекарств</Text>
         <Text style={styles.value}>{count}</Text>
       </View>
       <View style={styles.row}>
@@ -30,5 +30,5 @@ const styles = StyleSheet.create({
   label: { fontSize: 14, color: '#666' },
   value: { fontSize: 14, fontWeight: '600' },
   totalLabel: { fontSize: 16, fontWeight: '700' },
-  totalValue: { fontSize: 18, fontWeight: '800', color: '#1e88e5' },
+  totalValue: { fontSize: 18, fontWeight: '800', color: '#236b48' },
 });

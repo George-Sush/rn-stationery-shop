@@ -10,8 +10,13 @@ export default function HeaderCartButton() {
   const count = useCartStore(selectCartCount);
 
   return (
-    <Pressable onPress={() => navigation.navigate('Cart')} style={styles.wrap}>
-      <Text style={styles.icon}>🛒</Text>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Корзина, товаров: ${count}`}
+      onPress={() => navigation.navigate('Cart')}
+      style={styles.wrap}
+    >
+      <Text style={styles.icon}>🛍️</Text>
       {count > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>{count}</Text>
@@ -28,7 +33,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     top: 0,
-    backgroundColor: '#e53935',
+    backgroundColor: '#b65c48',
     borderRadius: 10,
     minWidth: 18,
     height: 18,
